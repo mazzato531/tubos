@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FAVECA – Tubos y Perfiles</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #1a3a5c;
+      --primary-dark: #122a42;
+      --accent: #e8a000;
+      --accent-light: #ffd166;
+      --bg: #f4f6f9;
+      --card: #ffffff;
+      --text: #2c3e50;
+      --muted: #7f8c8d;
+      --border: #dde3ec;
+      --danger: #c0392b;
+      --success: #27ae60;
+      --radius: 10px;
+      --shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+      color: #fff;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon {
+      width: 40px; height: 40px; background: var(--accent);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 900; color: var(--primary-dark);
+    }
+    .logo h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: 0.5px; }
+    .logo p { font-size: 0.72rem; opacity: 0.8; }
+    .header-actions { display: flex; gap: 10px; align-items: center; }
+    .btn-header {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff; padding: 7px 14px; border-radius: 6px;
+      cursor: pointer; font-size: 0.82rem; font-weight: 600;
+      transition: background 0.2s;
+    }
+    .btn-header:hover { background: rgba(255,255,255,0.28); }
+
+    /* ── MAIN ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px 60px; }
+
+    /* ── CONTROLS BAR ── */
+    .controls-bar {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px 20px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .controls-bar label { font-size: 0.82rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 4px; }
+    .select-cat {
+      flex: 1; min-width: 220px;
+    }
+    select, input[type=text], input[type=number] {
+      width: 100%; padding: 9px 12px; border: 1.5px solid var(--border);
+      border-radius: 7px; font-size: 0.9rem; background: #f9fafc;
+      color: var(--text); outline: none; transition: border-color 0.2s;
+    }
+    select:focus, input:focus { border-color: var(--primary); background: #fff; }
+
+    .discount-group { display: flex; flex-direction: column; }
+    .discount-btns { display: flex; gap: 6px; }
+    .btn-disc {
+      padding: 8px 14px; border-radius: 7px; border: 1.5px solid var(--border);
+      font-size: 0.82rem; font-weight: 700; cursor: pointer;
+      background: #f9fafc; color: var(--text); transition: all 0.15s;
+    }
+    .btn-disc:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-disc.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center; padding: 80px 20px;
+      color: var(--muted);
+    }
+    .empty-state .icon { font-size: 4rem; margin-bottom: 16px; }
+    .empty-state h3 { font-size: 1.2rem; margin-bottom: 8px; }
+
+    /* ── PRODUCTS TABLE ── */
+    .products-section {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .products-header {
+      background: var(--primary);
+      color: #fff; padding: 14px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .products-header h2 { font-size: 1rem; font-weight: 700; }
+    .cat-badge {
+      background: var(--accent); color: var(--primary-dark);
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 700;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      background: #f0f4f8; color: var(--muted);
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; padding: 11px 16px; text-align: left;
+    }
+    thead th.right { text-align: right; }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
+    tbody tr:hover { background: #f7f9fc; }
+    tbody td { padding: 11px 16px; font-size: 0.88rem; }
+    .td-name { font-weight: 500; }
+    .td-price { text-align: right; font-weight: 600; }
+    .td-price.usd { color: var(--primary); }
+    .td-price.bsf { color: var(--success); }
+    .td-price del { color: var(--muted); font-weight: 400; font-size: 0.78rem; display: block; }
+    .td-action { text-align: center; width: 90px; }
+    .btn-add {
+      background: var(--accent); color: var(--primary-dark);
+      border: none; padding: 6px 14px; border-radius: 6px;
+      font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: background 0.15s;
+    }
+    .btn-add:hover { background: var(--accent-light); }
+
+    /* ── CART ── */
+    .cart-section {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .cart-header {
+      background: var(--primary-dark);
+      color: #fff; padding: 14px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .cart-header h2 { font-size: 1rem; font-weight: 700; }
+    .cart-count {
+      background: var(--accent); color: var(--primary-dark);
+      border-radius: 50%; width: 24px; height: 24px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; font-weight: 800; margin-left: 8px;
+    }
+    .cart-empty { padding: 32px; text-align: center; color: var(--muted); font-size: 0.9rem; }
+    .cart-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 20px; border-bottom: 1px solid var(--border);
+    }
+    .cart-item:last-child { border-bottom: none; }
+    .cart-item-name { flex: 1; font-size: 0.85rem; }
+    .cart-item-cat {
+      font-size: 0.7rem; color: var(--muted);
+      background: #eef1f7; padding: 2px 7px; border-radius: 20px; display: inline-block; margin-top: 2px;
+    }
+    .cart-item-qty { display: flex; align-items: center; gap: 6px; }
+    .btn-qty {
+      width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--border);
+      background: #f4f6f9; cursor: pointer; font-size: 1rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+    }
+    .btn-qty:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .qty-input {
+      width: 48px; text-align: center; font-weight: 700; font-size: 0.9rem;
+      border: 1.5px solid var(--border); border-radius: 6px; padding: 2px 4px;
+    }
+    .qty-input:focus { outline: none; border-color: var(--primary); }
+    .cart-item-prices { text-align: right; min-width: 120px; }
+    .cart-item-usd { font-weight: 700; color: var(--primary); font-size: 0.9rem; }
+    .cart-item-bsf { font-size: 0.78rem; color: var(--success); }
+    .btn-remove { background: none; border: none; cursor: pointer; color: var(--danger); font-size: 1.1rem; padding: 4px; }
+
+    .cart-totals {
+      padding: 14px 20px;
+      background: #f7f9fc;
+      border-top: 2px solid var(--border);
+      display: flex; justify-content: flex-end; gap: 32px;
+    }
+    .total-item { text-align: right; }
+    .total-item span { font-size: 0.75rem; color: var(--muted); display: block; }
+    .total-item strong { font-size: 1.1rem; }
+    .total-item strong.usd { color: var(--primary); }
+    .total-item strong.bsf { color: var(--success); }
+
+    .cart-actions { padding: 14px 20px; display: flex; gap: 10px; justify-content: flex-end; }
+    .btn-primary {
+      background: var(--primary); color: #fff;
+      border: none; padding: 10px 22px; border-radius: 7px;
+      font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: background 0.15s;
+    }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-danger {
+      background: #fde8e7; color: var(--danger);
+      border: 1.5px solid #f5c6c4; padding: 10px 18px; border-radius: 7px;
+      font-size: 0.88rem; font-weight: 700; cursor: pointer;
+    }
+
+    /* ── MODAL ── */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6); z-index: 200;
+      align-items: center; justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--card); border-radius: 14px;
+      width: 90%; max-width: 720px; max-height: 90vh;
+      overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .modal-header {
+      background: var(--primary);
+      color: #fff; padding: 18px 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-radius: 14px 14px 0 0; position: sticky; top: 0; z-index: 2;
+    }
+    .modal-header h3 { font-size: 1rem; font-weight: 700; }
+    .btn-close { background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; }
+    .modal-body { padding: 24px; }
+
+    /* Admin tabs */
+    .admin-tabs { display: flex; gap: 4px; margin-bottom: 20px; background: #f0f4f8; padding: 4px; border-radius: 8px; }
+    .admin-tab {
+      flex: 1; padding: 8px 10px; border: none; background: none;
+      border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 600;
+      color: var(--muted); transition: all 0.15s;
+    }
+    .admin-tab.active { background: #fff; color: var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+
+    /* Product list in admin */
+    .admin-product-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 8px;
+      border: 1px solid var(--border); margin-bottom: 8px;
+      background: #fafbfc;
+    }
+    .admin-product-item.hidden-product { opacity: 0.5; background: #f5f5f5; }
+    .admin-product-item .apm-name { flex: 1; font-size: 0.83rem; }
+    .admin-product-item .apm-cat { font-size: 0.7rem; color: var(--muted); }
+    .apm-price-input {
+      width: 90px; padding: 6px 8px; border: 1.5px solid var(--border);
+      border-radius: 6px; font-size: 0.83rem; text-align: right;
+    }
+    .btn-sm {
+      padding: 6px 10px; border-radius: 6px; border: none;
+      font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.15s;
+    }
+    .btn-sm-save { background: var(--primary); color: #fff; }
+    .btn-sm-save:hover { background: var(--primary-dark); }
+    .btn-sm-toggle { background: #e8f4e8; color: var(--success); }
+    .btn-sm-toggle.hide { background: #fde8e7; color: var(--danger); }
+    .btn-sm-delete { background: #fde8e7; color: var(--danger); }
+    .btn-sm-delete:hover { background: var(--danger); color: #fff; }
+
+    /* Add product form */
+    .form-group { margin-bottom: 14px; }
+    .form-group label { font-size: 0.82rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 5px; }
+    .btn-full { width: 100%; padding: 11px; border-radius: 7px; font-size: 0.9rem; font-weight: 700; }
+
+    /* Config panel */
+    .config-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .config-row:last-child { border-bottom: none; }
+    .config-row label { flex: 1; font-size: 0.88rem; font-weight: 600; }
+    .config-row input { width: 120px; }
+
+    /* Login form */
+    .login-form { text-align: center; padding: 12px 0; }
+    .login-form .lock-icon { font-size: 3rem; margin-bottom: 12px; }
+    .login-form h3 { margin-bottom: 4px; }
+    .login-form p { color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; }
+    .login-form input {
+      max-width: 280px; margin: 0 auto 12px;
+      display: block; text-align: center; letter-spacing: 2px;
+    }
+    .login-error { color: var(--danger); font-size: 0.82rem; margin-top: 6px; display: none; }
+
+    /* Admin filter */
+    .admin-search { margin-bottom: 12px; }
+    .admin-cat-filter { margin-bottom: 12px; }
+
+    .badge-count {
+      font-size: 0.72rem; background: var(--border); padding: 1px 6px;
+      border-radius: 10px; margin-left: 4px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 500;
+      background: var(--primary-dark); color: #fff;
+      padding: 12px 20px; border-radius: 8px; font-size: 0.88rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.3s; pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: var(--success); }
+
+    /* Discount badge */
+    .disc-badge {
+      display: inline-block; font-size: 0.68rem; font-weight: 700;
+      background: #fde8e7; color: var(--danger);
+      padding: 1px 6px; border-radius: 10px; margin-left: 6px;
+    }
+
+    /* responsive */
+    @media(max-width: 600px) {
+      .controls-bar { flex-direction: column; }
+      .select-cat { min-width: 100%; }
+      .cart-item { flex-wrap: wrap; }
+      /* tabla con scroll horizontal — NO ocultar columna Agregar */
+      .products-section { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      table { min-width: 400px; }
+      tbody td, thead th { padding: 8px 10px; font-size: 0.82rem; }
+      .btn-add { padding: 6px 10px; font-size: 0.76rem; }
+      /* botones carrito apilados */
+      .cart-actions { flex-direction: column; }
+      .cart-actions .btn-primary, .cart-actions .btn-danger { width: 100%; justify-content: center; }
+    }
+
+    /* ── CONFIRM DIALOG ── */
+    .confirm-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55); z-index: 600;
+      align-items: center; justify-content: center;
+    }
+    .confirm-backdrop.open { display: flex; }
+    .confirm-box {
+      background: #fff; border-radius: 12px;
+      padding: 28px 28px 20px; max-width: 360px; width: 90%;
+      box-shadow: 0 16px 50px rgba(0,0,0,0.3); text-align: center;
+    }
+    .confirm-box .c-icon { font-size: 2.4rem; margin-bottom: 10px; }
+    .confirm-box h4 { font-size: 1rem; margin-bottom: 6px; color: var(--text); }
+    .confirm-box p { font-size: 0.85rem; color: var(--muted); margin-bottom: 20px; }
+    .confirm-btns { display: flex; gap: 10px; justify-content: center; }
+    .confirm-btns .btn-cancel {
+      padding: 9px 22px; border-radius: 7px; border: 1.5px solid var(--border);
+      background: #f4f6f9; color: var(--text); font-weight: 700; cursor: pointer; font-size: 0.88rem;
+    }
+    .confirm-btns .btn-confirm-ok {
+      padding: 9px 22px; border-radius: 7px; border: none;
+      background: var(--danger); color: #fff; font-weight: 700; cursor: pointer; font-size: 0.88rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">F</div>
+    <div>
+      <h1>FAVECA</h1>
+      <p>Tubos y Perfiles</p>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn-header" onclick="openAdmin()">⚙ Administrador</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- CONTROLS BAR -->
+  <div class="controls-bar">
+    <div class="select-cat">
+      <label>Categoría</label>
+      <select id="catSelect" onchange="onCatChange()">
+        <option value="">— Seleccionar categoría —</option>
+      </select>
+    </div>
+    <div class="discount-group">
+      <label>Descuento</label>
+      <div class="discount-btns">
+        <button class="btn-disc active" data-disc="0"    onclick="setDiscount(0)">Sin desc.</button>
+        <button class="btn-disc"       data-disc="0.10"  onclick="setDiscount(0.10)">10%</button>
+        <button class="btn-disc"       data-disc="0.15"  onclick="setDiscount(0.15)">15%</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCTS TABLE -->
+  <div id="productsSection" class="products-section" style="display:none">
+    <div class="products-header">
+      <h2 id="catTitle">—</h2>
+      <span class="cat-badge" id="catCount"></span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th class="right">Precio $</th>
+          <th class="right">Precio Bs.</th>
+          <th class="right">Agregar</th>
+        </tr>
+      </thead>
+      <tbody id="productsBody"></tbody>
+    </table>
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div id="emptyState" class="empty-state">
+    <div class="icon">🔩</div>
+    <h3>Selecciona una categoría</h3>
+    <p>Elige una categoría del menú para ver los productos disponibles.</p>
+  </div>
+
+  <!-- CART -->
+  <div class="cart-section">
+    <div class="cart-header">
+      <h2>Presupuesto <span class="cart-count" id="cartCount">0</span></h2>
+      <span style="font-size:0.8rem;opacity:0.8" id="discLabel"></span>
+    </div>
+    <div id="cartEmpty" class="cart-empty">No hay productos en el presupuesto.</div>
+    <div id="cartItems"></div>
+    <div id="cartTotals" class="cart-totals" style="display:none">
+      <div class="total-item">
+        <span>Total USD</span>
+        <strong class="usd" id="totalUSD">$0.00</strong>
+      </div>
+      <div class="total-item">
+        <span>Total Bs.</span>
+        <strong class="bsf" id="totalBsF">$0.00</strong>
+      </div>
+    </div>
+    <div id="cartActions" class="cart-actions" style="display:none">
+      <button class="btn-danger" onclick="clearCart()">🗑 Vaciar</button>
+      <button class="btn-primary" onclick="generatePDF()">📄 Generar PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADMIN MODAL ── -->
+<div class="modal-backdrop" id="adminBackdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>⚙ Panel de Administrador</h3>
+      <button class="btn-close" onclick="closeAdmin()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- LOGIN -->
+      <div id="adminLogin">
+        <div class="login-form">
+          <div class="lock-icon">🔒</div>
+          <h3>Acceso Restringido</h3>
+          <p>Ingresa la contraseña de administrador</p>
+          <input type="password" id="adminPass" placeholder="Contraseña" onkeydown="if(event.key==='Enter') checkPass()" />
+          <div class="login-error" id="loginError">Contraseña incorrecta</div>
+          <br/>
+          <button class="btn-primary btn-full" onclick="checkPass()" style="max-width:280px;margin:0 auto">Ingresar</button>
+        </div>
+      </div>
+
+      <!-- ADMIN CONTENT -->
+      <div id="adminContent" style="display:none">
+        <div class="admin-tabs">
+          <button class="admin-tab active" onclick="switchTab('products')">📋 Productos</button>
+          <button class="admin-tab" onclick="switchTab('add')">➕ Agregar</button>
+          <button class="admin-tab" onclick="switchTab('config')">🔧 Configuración</button>
+        </div>
+
+        <!-- TAB: Products -->
+        <div class="admin-panel active" id="tab-products">
+          <div class="admin-cat-filter">
+            <select id="adminCatFilter" onchange="renderAdminList()">
+              <option value="">— Todas las categorías —</option>
+            </select>
+          </div>
+          <div class="admin-search">
+            <input type="text" id="adminSearch" placeholder="🔍 Buscar producto..." oninput="renderAdminList()" />
+          </div>
+          <div id="adminProductList"></div>
+        </div>
+
+        <!-- TAB: Add -->
+        <div class="admin-panel" id="tab-add">
+          <div class="form-group">
+            <label>Categoría</label>
+            <select id="newCat">
+              <option value="">— Seleccionar o escribir —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Nueva Categoría (opcional, si no existe)</label>
+            <input type="text" id="newCatCustom" placeholder="Ej: GALVANIZADO" />
+          </div>
+          <div class="form-group">
+            <label>Nombre del Producto</label>
+            <input type="text" id="newName" placeholder='Ej: 2" x 1" x 1.40 mm' />
+          </div>
+          <div class="form-group">
+            <label>Precio en USD ($)</label>
+            <input type="number" id="newPrice" placeholder="Ej: 12.50" step="0.01" min="0" />
+          </div>
+          <button class="btn-primary btn-full" onclick="addProduct()">➕ Agregar Producto</button>
+        </div>
+
+        <!-- TAB: Config -->
+        <div class="admin-panel" id="tab-config">
+          <div class="config-row">
+            <label>Factor Bs. (diferencial)<br><small style="color:var(--muted);font-weight:400">Bs = $ × factor</small></label>
+            <input type="number" id="cfgDiff" step="0.01" min="1" />
+            <button class="btn-sm btn-sm-save" onclick="saveDiff()">Guardar</button>
+          </div>
+          <div class="config-row">
+            <label>Contraseña administrador</label>
+            <input type="password" id="cfgPass" placeholder="Nueva contraseña" />
+            <button class="btn-sm btn-sm-save" onclick="savePass()">Guardar</button>
+          </div>
+          <div class="config-row" style="margin-top:20px">
+            <label style="color:var(--danger)">Restaurar todos los precios a valores originales</label>
+            <button class="btn-sm" style="background:#fde8e7;color:var(--danger)" onclick="resetPrices()">Restaurar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="confirm-backdrop" id="confirmBackdrop">
+  <div class="confirm-box">
+    <div class="c-icon">🗑</div>
+    <h4>¿Vaciar presupuesto?</h4>
+    <p>Se eliminarán todos los productos del presupuesto actual. Esta acción no se puede deshacer.</p>
+    <div class="confirm-btns">
+      <button class="btn-cancel" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn-confirm-ok" onclick="confirmClear()">Sí, vaciar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════
+   DATA
+══════════════════════════════════════ */
+const BASE_PRODUCTS = [
+  {"id":1,"categoria":"REDONDO","nombre":"5/8\" x 0.85 mm","precio_usd":2.64},
+  {"id":2,"categoria":"REDONDO","nombre":"5/8\" x 0.90 mm","precio_usd":2.8},
+  {"id":3,"categoria":"REDONDO","nombre":"5/8\" x 1.10 mm","precio_usd":3.42},
+  {"id":4,"categoria":"REDONDO","nombre":"5/8\" x 1.40 mm","precio_usd":4.17},
+  {"id":5,"categoria":"REDONDO","nombre":"5/8\" x 1.45 mm","precio_usd":4.29},
+  {"id":6,"categoria":"REDONDO","nombre":"5/8\" x 1.85 mm","precio_usd":5.44},
+  {"id":7,"categoria":"REDONDO","nombre":"3/4\" x 0.85 mm","precio_usd":3.15},
+  {"id":8,"categoria":"REDONDO","nombre":"3/4\" x 0.90 mm (A)","precio_usd":3.33},
+  {"id":9,"categoria":"REDONDO","nombre":"3/4\" x 0.90 mm (B)","precio_usd":3.38},
+  {"id":10,"categoria":"REDONDO","nombre":"3/4\" x 0.90 mm (C)","precio_usd":3.43},
+  {"id":11,"categoria":"REDONDO","nombre":"3/4\" x 0.85 mm (B)","precio_usd":3.47},
+  {"id":12,"categoria":"REDONDO","nombre":"3/4\" x 0.90 mm (D)","precio_usd":3.92},
+  {"id":13,"categoria":"REDONDO","nombre":"3/4\" x 1.05 mm","precio_usd":3.88},
+  {"id":14,"categoria":"REDONDO","nombre":"3/4\" x 1.10 mm","precio_usd":4.08},
+  {"id":15,"categoria":"REDONDO","nombre":"3/4\" x 1.20 mm","precio_usd":4.45},
+  {"id":16,"categoria":"REDONDO","nombre":"3/4\" x 1.40 mm","precio_usd":4.65},
+  {"id":17,"categoria":"REDONDO","nombre":"7/8\" x 0.90 mm","precio_usd":3.84},
+  {"id":18,"categoria":"REDONDO","nombre":"7/8\" x 1.07 mm","precio_usd":4.63},
+  {"id":19,"categoria":"REDONDO","nombre":"7/8\" x 1.40 mm","precio_usd":5.83},
+  {"id":20,"categoria":"REDONDO","nombre":"7/8\" x 1.90 mm","precio_usd":7.87},
+  {"id":21,"categoria":"REDONDO","nombre":"1\" x 0.85 mm (A)","precio_usd":4.08},
+  {"id":22,"categoria":"REDONDO","nombre":"1\" x 0.85 mm (B)","precio_usd":4.15},
+  {"id":23,"categoria":"REDONDO","nombre":"1\" x 0.90 mm","precio_usd":4.41},
+  {"id":24,"categoria":"REDONDO","nombre":"1\" x 1.07 mm","precio_usd":5.26},
+  {"id":25,"categoria":"REDONDO","nombre":"1\" x 1.10 mm","precio_usd":5.4},
+  {"id":26,"categoria":"REDONDO","nombre":"1\" x 1.40 mm","precio_usd":6.69},
+  {"id":27,"categoria":"REDONDO","nombre":"1\" x 1.45 mm","precio_usd":6.92},
+  {"id":28,"categoria":"REDONDO","nombre":"1\" x 1.90 mm","precio_usd":8.91},
+  {"id":29,"categoria":"REDONDO","nombre":"1 1/4\" x 0.85 mm","precio_usd":5.12},
+  {"id":30,"categoria":"REDONDO","nombre":"1 1/4\" x 0.90 mm","precio_usd":5.41},
+  {"id":31,"categoria":"REDONDO","nombre":"1 1/4\" x 1.05 mm","precio_usd":6.35},
+  {"id":32,"categoria":"REDONDO","nombre":"1 1/4\" x 1.15 mm","precio_usd":6.81},
+  {"id":33,"categoria":"REDONDO","nombre":"1 1/4\" x 1.40 mm","precio_usd":8.37},
+  {"id":34,"categoria":"REDONDO","nombre":"1 1/4\" x 1.85 mm","precio_usd":10.91},
+  {"id":35,"categoria":"REDONDO","nombre":"1 1/4\" x 1.90 mm","precio_usd":11.19},
+  {"id":36,"categoria":"REDONDO","nombre":"1 1/2\" x 0.90 mm","precio_usd":7.01},
+  {"id":37,"categoria":"REDONDO","nombre":"1 1/2\" x 1.10 mm","precio_usd":8.64},
+  {"id":38,"categoria":"REDONDO","nombre":"1 1/2\" x 1.40 mm","precio_usd":10.88},
+  {"id":39,"categoria":"REDONDO","nombre":"1 1/2\" x 1.85 mm","precio_usd":14.22},
+  {"id":40,"categoria":"REDONDO","nombre":"1 1/2\" x 1.90 mm","precio_usd":14.61},
+  {"id":41,"categoria":"REDONDO","nombre":"1 3/4\" x 1.40 T.E.","precio_usd":12.79},
+  {"id":42,"categoria":"REDONDO","nombre":"1 3/4 x 1.85 T.E.","precio_usd":16.62},
+  {"id":43,"categoria":"REDONDO","nombre":"1 3/4 x 1.90","precio_usd":17.06},
+  {"id":44,"categoria":"REDONDO","nombre":"1 7/8\" x 0.90 mm","precio_usd":8.11},
+  {"id":45,"categoria":"REDONDO","nombre":"1 7/8\" x 1.40 mm T.E.","precio_usd":13.6},
+  {"id":46,"categoria":"REDONDO","nombre":"1 7/8\" x 1.85 mm T.E.","precio_usd":16.86},
+  {"id":47,"categoria":"REDONDO","nombre":"2\" x 0.90 mm","precio_usd":9.42},
+  {"id":48,"categoria":"REDONDO","nombre":"2\" x 1.15 mm","precio_usd":12.01},
+  {"id":49,"categoria":"REDONDO","nombre":"2\" x 1.40 mm T.E. (A)","precio_usd":14.52},
+  {"id":50,"categoria":"REDONDO","nombre":"2\" x 1.40 mm T.E. (B)","precio_usd":19.04},
+  {"id":51,"categoria":"REDONDO","nombre":"2\" x 1.90 mm T.E.","precio_usd":19.56},
+  {"id":52,"categoria":"REDONDO","nombre":"2 1/4\" x 1.45 mm","precio_usd":16.72},
+  {"id":53,"categoria":"REDONDO","nombre":"2 1/4\" x 1.85 mm T.E.","precio_usd":21.44},
+  {"id":54,"categoria":"REDONDO","nombre":"2 1/4\" x 1.90 mm T.E.","precio_usd":21.88},
+  {"id":55,"categoria":"REDONDO","nombre":"2 1/2\" x 1.10 mm","precio_usd":14.37},
+  {"id":56,"categoria":"REDONDO","nombre":"2 1/2\" x 1.40 mm T.E.","precio_usd":18.15},
+  {"id":57,"categoria":"REDONDO","nombre":"2 1/2\" x 1.85 mm T.E.","precio_usd":23.85},
+  {"id":58,"categoria":"REDONDO","nombre":"2 1/2\" x 1.90 mm T.E.","precio_usd":24.51},
+  {"id":59,"categoria":"CUADRADO","nombre":"1/2\" x 1/2\" x 0.85 mm C.B.","precio_usd":2.64},
+  {"id":60,"categoria":"CUADRADO","nombre":"1/2\" x 1/2\" x 0.90 mm (A)","precio_usd":2.8},
+  {"id":61,"categoria":"CUADRADO","nombre":"1/2\" x 1/2\" x 0.90 mm (B)","precio_usd":3.07},
+  {"id":62,"categoria":"CUADRADO","nombre":"1/2\" x 1/2\" x 1.10 mm","precio_usd":3.42},
+  {"id":63,"categoria":"CUADRADO","nombre":"5/8\" x 5/8\" x 0.90 mm","precio_usd":3.48},
+  {"id":64,"categoria":"CUADRADO","nombre":"3/4\" x 3/4\" x 0.80 mm","precio_usd":3.62},
+  {"id":65,"categoria":"CUADRADO","nombre":"3/4\" x 3/4\" x 0.85 mm C.B.","precio_usd":3.84},
+  {"id":66,"categoria":"CUADRADO","nombre":"3/4\" x 3/4\" x 0.90 mm","precio_usd":4.07},
+  {"id":67,"categoria":"CUADRADO","nombre":"3/4\" x 3/4\" x 1.00 mm","precio_usd":4.54},
+  {"id":68,"categoria":"CUADRADO","nombre":"3/4\" x 3/4\" x 1.10 mm","precio_usd":5.01},
+  {"id":69,"categoria":"CUADRADO","nombre":"1\" x 1\" x 0.80 mm C.B.","precio_usd":4.85},
+  {"id":70,"categoria":"CUADRADO","nombre":"1\" x 1\" x 0.85 mm C.B.","precio_usd":5.12},
+  {"id":71,"categoria":"CUADRADO","nombre":"1\" x 1\" x 0.90 mm C.B.","precio_usd":5.41},
+  {"id":72,"categoria":"CUADRADO","nombre":"1\" x 1\" x 1.10 mm","precio_usd":6.66},
+  {"id":73,"categoria":"CUADRADO","nombre":"1\" x 1\" x 1.40 mm","precio_usd":8.37},
+  {"id":74,"categoria":"CUADRADO","nombre":"1\" x 1\" x 1.45 mm","precio_usd":8.65},
+  {"id":75,"categoria":"CUADRADO","nombre":"1\" x 1\" x 1.85 mm","precio_usd":10.91},
+  {"id":76,"categoria":"CUADRADO","nombre":"1\" x 1\" x 1.90 mm","precio_usd":11.29},
+  {"id":77,"categoria":"CUADRADO","nombre":"1 1/4\" x 1 1/4\" x 0.90 mm","precio_usd":6.81},
+  {"id":78,"categoria":"CUADRADO","nombre":"1 1/4\" x 1 1/4\" x 1.10 mm","precio_usd":8.38},
+  {"id":79,"categoria":"CUADRADO","nombre":"1 1/2\" x 1 1/2\" x 0.85 mm","precio_usd":7.65},
+  {"id":80,"categoria":"CUADRADO","nombre":"1 1/2\" x 1 1/2\" x 0.90 mm","precio_usd":8.11},
+  {"id":81,"categoria":"CUADRADO","nombre":"1 1/2\" x 1 1/2\" x 1.10 mm","precio_usd":9.97},
+  {"id":82,"categoria":"CUADRADO","nombre":"1 1/2\" x 1 1/2\" x 1.40 mm","precio_usd":12.57},
+  {"id":83,"categoria":"CUADRADO","nombre":"1 1/2\" x 1 1/2\" x 1.90 mm","precio_usd":16.91},
+  {"id":84,"categoria":"CUADRADO","nombre":"2\" x 2\" x 0.90 mm C.B.","precio_usd":10.78},
+  {"id":85,"categoria":"CUADRADO","nombre":"2\" x 2\" x 1.10 mm C.B.","precio_usd":13.26},
+  {"id":86,"categoria":"CUADRADO","nombre":"2\" x 2\" x 1.40 mm","precio_usd":16.91},
+  {"id":87,"categoria":"CUADRADO","nombre":"2\" x 2\" x 1.85 mm","precio_usd":22.14},
+  {"id":88,"categoria":"CUADRADO","nombre":"2\" x 2\" x 1.90 mm","precio_usd":22.75},
+  {"id":89,"categoria":"RECTANGULAR","nombre":"1\" x 1/2\" x 0.85 mm","precio_usd":3.64},
+  {"id":90,"categoria":"RECTANGULAR","nombre":"1\" x 1/2\" x 0.90 mm","precio_usd":4.07},
+  {"id":91,"categoria":"RECTANGULAR","nombre":"1\" x 1/2\" x 1.10 mm","precio_usd":5.01},
+  {"id":92,"categoria":"RECTANGULAR","nombre":"1 1/2\" x 3/4\" x 0.85 mm","precio_usd":5.94},
+  {"id":93,"categoria":"RECTANGULAR","nombre":"1 1/2\" x 3/4\" x 0.90 mm","precio_usd":6.26},
+  {"id":94,"categoria":"RECTANGULAR","nombre":"1 1/2\" x 3/4\" x 1.10 mm","precio_usd":7.02},
+  {"id":95,"categoria":"RECTANGULAR","nombre":"1 1/2\" x 1/2\" x 0.90 mm","precio_usd":5.41},
+  {"id":96,"categoria":"RECTANGULAR","nombre":"1 1/2\" x 1/2\" x 1.10 mm","precio_usd":6.66},
+  {"id":97,"categoria":"RECTANGULAR","nombre":"1 1/2\" x 1\" x 0.90 mm","precio_usd":6.81},
+  {"id":98,"categoria":"RECTANGULAR","nombre":"1 1/2\" x 1\" x 1.10 mm","precio_usd":8.38},
+  {"id":99,"categoria":"RECTANGULAR","nombre":"1 3/4\" x 1 1/4\" x 0.90 mm","precio_usd":8.11},
+  {"id":100,"categoria":"RECTANGULAR","nombre":"2\" x 1\" x 0.70 mm C.B.","precio_usd":6.39},
+  {"id":101,"categoria":"RECTANGULAR","nombre":"2\" x 1\" x 0.85 mm C.B.","precio_usd":7.65},
+  {"id":102,"categoria":"RECTANGULAR","nombre":"2\" x 1\" x 0.90 mm C.B.","precio_usd":8.11},
+  {"id":103,"categoria":"RECTANGULAR","nombre":"2\" x 1\" x 1.10 mm","precio_usd":9.93},
+  {"id":104,"categoria":"RECTANGULAR","nombre":"2\" x 1\" x 1.40 mm","precio_usd":12.57},
+  {"id":105,"categoria":"RECTANGULAR","nombre":"2\" x 1\" x 1.45 mm","precio_usd":13.0},
+  {"id":106,"categoria":"RECTANGULAR","nombre":"2\" x 1\" x 1.85 mm","precio_usd":16.45},
+  {"id":107,"categoria":"RECTANGULAR","nombre":"2\" x 1\" x 1.90 mm","precio_usd":16.91},
+  {"id":108,"categoria":"RECTANGULAR","nombre":"2\" x 1 1/2\" x 0.90 mm","precio_usd":9.6},
+  {"id":109,"categoria":"RECTANGULAR","nombre":"2\" x 1 1/2\" x 1.10 mm","precio_usd":11.8},
+  {"id":110,"categoria":"RECTANGULAR","nombre":"2\" x 1 1/2\" x 1.40 mm","precio_usd":14.94},
+  {"id":111,"categoria":"RECTANGULAR","nombre":"2 1/2\" x 1\" x 0.90 mm","precio_usd":9.66},
+  {"id":112,"categoria":"RECTANGULAR","nombre":"2 1/2\" x 1\" x 1.00 mm","precio_usd":10.77},
+  {"id":113,"categoria":"RECTANGULAR","nombre":"2 1/2\" x 1\" x 1.10 mm","precio_usd":11.8},
+  {"id":114,"categoria":"RECTANGULAR","nombre":"2 1/2\" x 1\" x 1.40 mm","precio_usd":15.01},
+  {"id":115,"categoria":"RECTANGULAR","nombre":"2 1/2\" x 1 1/2\" x 1.10 mm","precio_usd":13.26},
+  {"id":116,"categoria":"RECTANGULAR","nombre":"2 1/2\" x 1 1/2\" x 1.40 mm","precio_usd":16.76},
+  {"id":117,"categoria":"RECTANGULAR","nombre":"2 1/2\" x 1 1/2\" x 1.90 mm","precio_usd":22.75},
+  {"id":118,"categoria":"RECTANGULAR","nombre":"3\" x 1\" x 1.10 mm C.B.","precio_usd":13.26},
+  {"id":119,"categoria":"RECTANGULAR","nombre":"3\" x 1\" x 1.40 mm","precio_usd":16.76},
+  {"id":120,"categoria":"RECTANGULAR","nombre":"3\" x 1 1/2\" x 0.90 mm","precio_usd":12.17},
+  {"id":121,"categoria":"RECTANGULAR","nombre":"3\" x 1 1/2\" x 1.10 mm","precio_usd":15.14},
+  {"id":122,"categoria":"RECTANGULAR","nombre":"3\" x 1 1/2\" x 1.20 mm","precio_usd":16.35},
+  {"id":123,"categoria":"RECTANGULAR","nombre":"3\" x 1 1/2\" x 1.40 mm","precio_usd":18.91},
+  {"id":124,"categoria":"RECTANGULAR","nombre":"3\" x 1 1/2\" x 1.90 mm","precio_usd":25.83},
+  {"id":125,"categoria":"OVALADO","nombre":"30 x 14 x 1.40 mm","precio_usd":6.42},
+  {"id":126,"categoria":"OVALADO","nombre":"30 x 14 x 1.90 mm","precio_usd":8.45},
+  {"id":127,"categoria":"PERFILES PARA PUERTAS","nombre":"BLOQUE 10 / 130x40x10 x 0.70mm","precio_usd":8.13},
+  {"id":128,"categoria":"PERFILES PARA PUERTAS","nombre":"BLOQUE 12 / 150x40x10 x 0.70mm","precio_usd":8.88},
+  {"id":129,"categoria":"PERFILES PARA PUERTAS","nombre":"BLOQUE 15 / 170x40x10 x 0.70mm","precio_usd":9.98},
+  {"id":130,"categoria":"PERFILES PARA PUERTAS","nombre":"BLOQUE 10 / 130x40x10 x 0.85mm","precio_usd":9.89},
+  {"id":131,"categoria":"PERFILES PARA PUERTAS","nombre":"BLOQUE 12 / 150x40x10 x 0.85mm","precio_usd":10.77},
+  {"id":132,"categoria":"PERFILES PARA PUERTAS","nombre":"BLOQUE 15 / 170x40x10 x 0.85mm","precio_usd":12.12},
+  {"id":133,"categoria":"LAMINA PLANCHADA","nombre":"1.20 x 2.40 x 0.70 mm","precio_usd":20.69},
+  {"id":134,"categoria":"LAMINA PLANCHADA","nombre":"1.20 x 2.40 x 0.85 mm","precio_usd":25.13},
+  {"id":135,"categoria":"LAMINA PLANCHADA","nombre":"1.20 x 2.40 x 1.10 mm","precio_usd":32.51},
+  {"id":136,"categoria":"LAMINA PLANCHADA","nombre":"1.20 x 2.40 x 1.40 mm","precio_usd":41.38},
+  {"id":137,"categoria":"LAMINA PLANCHADA","nombre":"1.20 x 2.40 x 1.85 mm","precio_usd":54.67},
+  {"id":138,"categoria":"OTROS PRODUCTOS","nombre":"Carretilla 120 Kg Rueda Maciza GOMA / Metálica","precio_usd":47.0},
+  {"id":139,"categoria":"OTROS PRODUCTOS","nombre":"Cuerpo de Andamio Completo (2 Marcos + 2 Tijeras)","precio_usd":77.0}
+];
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+let discount      = 0;
+let cart          = [];
+let differential  = parseFloat(localStorage.getItem('faveca_diff') || '1.25');
+let adminPassword = localStorage.getItem('faveca_pass') || 'admin123';
+let priceOverrides  = JSON.parse(localStorage.getItem('faveca_prices')  || '{}');
+let hiddenIds       = JSON.parse(localStorage.getItem('faveca_hidden')  || '[]');
+let deletedIds      = JSON.parse(localStorage.getItem('faveca_deleted') || '[]');
+let customProducts  = JSON.parse(localStorage.getItem('faveca_custom')  || '[]');
+
+/* Merged product list (visible only) */
+function getProducts() {
+  const all = [...BASE_PRODUCTS, ...customProducts];
+  return all.map(p => {
+    const ov = priceOverrides[String(p.id)];
+    return { ...p, precio_usd: ov !== undefined ? parseFloat(ov) : p.precio_usd };
+  }).filter(p => !hiddenIds.includes(String(p.id)) && !deletedIds.includes(String(p.id)));
+}
+
+/* All products (including hidden but NOT deleted), for admin */
+function getAllProducts() {
+  const all = [...BASE_PRODUCTS, ...customProducts];
+  return all.map(p => {
+    const ov = priceOverrides[String(p.id)];
+    return { ...p, precio_usd: ov !== undefined ? parseFloat(ov) : p.precio_usd };
+  }).filter(p => !deletedIds.includes(String(p.id)));
+}
+
+function getCategories() {
+  const cats = [...new Set(getProducts().map(p => p.categoria))];
+  return cats.sort();
+}
+
+function getAllCategories() {
+  const all = [...BASE_PRODUCTS, ...customProducts];
+  const cats = [...new Set(all.map(p => p.categoria))];
+  return cats.sort();
+}
+
+/* ══════════════════════════════════════
+   PRICE CALC
+══════════════════════════════════════ */
+function roundUSD(price) { return Math.ceil(price * 100) / 100; }
+
+function calcUSD(basePrice, disc) {
+  return roundUSD(basePrice * (1 - disc));
+}
+function calcBsF(usdRounded) {
+  return Math.ceil(usdRounded) * differential;
+}
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+function init() {
+  // Public category selector (visible products only)
+  const prevCat = document.getElementById('catSelect').value;
+  const sel = document.getElementById('catSelect');
+  sel.innerHTML = '<option value="">— Seleccionar categoría —</option>';
+  getCategories().forEach(cat => {
+    const o = document.createElement('option');
+    o.value = cat; o.textContent = cat;
+    if (cat === prevCat) o.selected = true;
+    sel.appendChild(o);
+  });
+
+  // Admin dropdowns (all categories incl. hidden)
+  const adminSel = document.getElementById('adminCatFilter');
+  const prevAdmin = adminSel.value;
+  adminSel.innerHTML = '<option value="">— Todas las categorías —</option>';
+  const newCatSel = document.getElementById('newCat');
+  newCatSel.innerHTML = '<option value="">— Seleccionar categoría —</option>';
+  getAllCategories().forEach(cat => {
+    const o1 = document.createElement('option');
+    o1.value = cat; o1.textContent = cat;
+    if (cat === prevAdmin) o1.selected = true;
+    adminSel.appendChild(o1);
+    const o2 = document.createElement('option');
+    o2.value = cat; o2.textContent = cat;
+    newCatSel.appendChild(o2);
+  });
+}
+
+/* ══════════════════════════════════════
+   CATEGORY SELECTION
+══════════════════════════════════════ */
+function onCatChange() {
+  const cat = document.getElementById('catSelect').value;
+  if (!cat) {
+    document.getElementById('productsSection').style.display = 'none';
+    document.getElementById('emptyState').style.display = 'block';
+    return;
+  }
+  document.getElementById('productsSection').style.display = 'block';
+  document.getElementById('emptyState').style.display = 'none';
+  renderProducts(cat);
+}
+
+function renderProducts(cat) {
+  const products = getProducts().filter(p => p.categoria === cat);
+  document.getElementById('catTitle').textContent = cat;
+  document.getElementById('catCount').textContent = products.length + ' productos';
+  const tbody = document.getElementById('productsBody');
+  tbody.innerHTML = '';
+  products.forEach(p => {
+    const usd = calcUSD(p.precio_usd, discount);
+    const bsf = calcBsF(usd);
+    const baseUsd = calcUSD(p.precio_usd, 0);
+    const baseBsf = calcBsF(baseUsd);
+    const hasDisc = discount > 0;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="td-name">${p.nombre}</td>
+      <td class="td-price usd">
+        ${hasDisc ? `<del>$${baseUsd.toFixed(2)}</del>` : ''}
+        $${usd.toFixed(2)}
+        ${hasDisc ? `<span class="disc-badge">-${(discount*100).toFixed(0)}%</span>` : ''}
+      </td>
+      <td class="td-price bsf">
+        ${hasDisc ? `<del>$${baseBsf.toFixed(2)}</del>` : ''}
+        $${bsf.toFixed(2)}
+      </td>
+      <td class="td-action">
+        <button class="btn-add" onclick="addToCart(${p.id})">+ Agregar</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ══════════════════════════════════════
+   DISCOUNT
+══════════════════════════════════════ */
+function setDiscount(d) {
+  discount = d;
+  document.querySelectorAll('.btn-disc').forEach(b => {
+    b.classList.toggle('active', parseFloat(b.dataset.disc) === d);
+  });
+  const lbl = document.getElementById('discLabel');
+  lbl.textContent = d > 0 ? `Descuento aplicado: ${(d*100).toFixed(0)}%` : '';
+  const cat = document.getElementById('catSelect').value;
+  if (cat) renderProducts(cat);
+  renderCart();
+}
+
+/* ══════════════════════════════════════
+   CART
+══════════════════════════════════════ */
+function addToCart(id) {
+  const sid = String(id);
+  const all = [...BASE_PRODUCTS, ...customProducts];
+  const prod = all.find(p => String(p.id) === sid);
+  if (!prod) return;
+  const ov = priceOverrides[sid];
+  const basePrice = ov !== undefined ? parseFloat(ov) : prod.precio_usd;
+  const existing = cart.find(c => String(c.id) === sid);
+  if (existing) {
+    existing.qty++;
+  } else {
+    cart.push({ id: sid, nombre: prod.nombre, categoria: prod.categoria, basePrice, qty: 1 });
+  }
+  renderCart();
+  showToast('✔ ' + prod.nombre + ' agregado al presupuesto', 'success');
+}
+
+function removeFromCart(id) {
+  const sid = String(id);
+  cart = cart.filter(c => String(c.id) !== sid);
+  renderCart();
+}
+
+function setQty(id, val) {
+  const sid  = String(id);
+  const item = cart.find(c => String(c.id) === sid);
+  if (!item) return;
+  const n = parseInt(val, 10);
+  item.qty = isNaN(n) || n < 1 ? 1 : n;
+  renderCart();
+}
+
+function changeQty(id, delta) {
+  const sid = String(id);
+  const item = cart.find(c => String(c.id) === sid);
+  if (!item) return;
+  item.qty = Math.max(1, item.qty + delta);
+  renderCart();
+}
+
+/* ── Confirm clear (reemplaza confirm() nativo que se bloquea en algunos browsers) ── */
+function clearCart() {
+  document.getElementById('confirmBackdrop').classList.add('open');
+}
+function closeConfirm() {
+  document.getElementById('confirmBackdrop').classList.remove('open');
+}
+function confirmClear() {
+  cart = [];
+  closeConfirm();
+  renderCart();
+  showToast('🗑 Presupuesto vaciado', '');
+}
+
+function renderCart() {
+  const count = cart.reduce((s, c) => s + c.qty, 0);
+  document.getElementById('cartCount').textContent = count;
+
+  const elEmpty   = document.getElementById('cartEmpty');
+  const elItems   = document.getElementById('cartItems');
+  const elTotals  = document.getElementById('cartTotals');
+  const elActions = document.getElementById('cartActions');
+
+  // ── Limpiar DOM siempre ──
+  elItems.innerHTML = '';
+
+  if (cart.length === 0) {
+    elEmpty.style.display   = 'block';
+    elTotals.style.display  = 'none';
+    elActions.style.display = 'none';
+    return;
+  }
+
+  elEmpty.style.display   = 'none';
+  elTotals.style.display  = 'flex';
+  elActions.style.display = 'flex';
+
+  let totalUSD = 0, totalBsF = 0;
+
+  cart.forEach(c => {
+    const usd     = calcUSD(c.basePrice, discount);
+    const bsf     = calcBsF(usd);
+    const lineUSD = Math.round(usd * c.qty * 100) / 100;
+    const lineBsF = Math.round(bsf * c.qty * 100) / 100;
+    totalUSD += lineUSD;
+    totalBsF += lineBsF;
+
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    div.innerHTML =
+      '<div class="cart-item-name">' +
+        c.nombre +
+        '<span class="cart-item-cat">' + c.categoria + '</span>' +
+      '</div>' +
+      '<div class="cart-item-qty">' +
+        '<button class="btn-qty" onclick="changeQty(\'' + c.id + '\',-1)">−</button>' +
+        '<input type="number" min="1" class="qty-input" value="' + c.qty + '"' +
+               ' onchange="setQty(\'' + c.id + '\', this.value)"' +
+               ' onfocus="this.select()" />' +
+        '<button class="btn-qty" onclick="changeQty(\'' + c.id + '\',+1)">+</button>' +
+      '</div>' +
+      '<div class="cart-item-prices">' +
+        '<div class="cart-item-usd">$' + lineUSD.toFixed(2) + '</div>' +
+        '<div class="cart-item-bsf">$' + lineBsF.toFixed(2) + '</div>' +
+      '</div>' +
+      '<button class="btn-remove" onclick="removeFromCart(\'' + c.id + '\')" title="Eliminar">🗑</button>';
+    elItems.appendChild(div);
+  });
+
+  document.getElementById('totalUSD').textContent = '$' + totalUSD.toFixed(2);
+  document.getElementById('totalBsF').textContent = '$' + totalBsF.toFixed(2);
+}
+
+/* ══════════════════════════════════════
+   PDF
+══════════════════════════════════════ */
+function generatePDF() {
+  if (cart.length === 0) { showToast('El presupuesto está vacío'); return; }
+  if (!window.jspdf) { showToast('Librería PDF no cargada, verifica la conexión'); return; }
+
+  const { jsPDF } = window.jspdf;
+  const doc   = new jsPDF({ unit: 'mm', format: 'a4' });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const mg    = 14;
+  let y = mg;
+
+  // ── Encabezado ──
+  doc.setFillColor(26, 58, 92);
+  doc.rect(0, 0, pageW, 32, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(20); doc.setFont('helvetica', 'bold');
+  doc.text('FAVECA', mg, 14);
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+  doc.text('Tubos y Perfiles', mg, 21);
+  doc.setFontSize(8);
+  const fecha = new Date().toLocaleDateString('es-VE', { day:'2-digit', month:'2-digit', year:'numeric' });
+  doc.text('Presupuesto: ' + fecha, pageW - mg, 14, { align: 'right' });
+  if (discount > 0) {
+    doc.setTextColor(232, 160, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Descuento aplicado: ' + (discount * 100).toFixed(0) + '%', pageW - mg, 21, { align: 'right' });
+  }
+  y = 42;
+
+  // ── Cabecera de tabla ──
+  const colCat  = mg;
+  const colNom  = mg + 28;
+  const colQty  = pageW - 68;
+  const colUnit = pageW - 50;
+  const colTUSD = pageW - 30;
+  const colTBsF = pageW - mg;
+
+  doc.setFillColor(240, 244, 248);
+  doc.rect(mg, y - 4, pageW - mg * 2, 8, 'F');
+  doc.setTextColor(90, 100, 115);
+  doc.setFontSize(6.5); doc.setFont('helvetica', 'bold');
+  doc.text('CATEGORÍA',  colCat,  y);
+  doc.text('PRODUCTO',   colNom,  y);
+  doc.text('CANT.',      colQty,  y, { align: 'right' });
+  doc.text('P.UNIT $',   colUnit, y, { align: 'right' });
+  doc.text('TOTAL $',    colTUSD, y, { align: 'right' });
+  doc.text('TOTAL Bs.',  colTBsF, y, { align: 'right' });
+  y += 2;
+  doc.setDrawColor(200, 210, 225);
+  doc.line(mg, y, pageW - mg, y);
+  y += 4;
+
+  // ── Filas ──
+  let totalUSD = 0, totalBsF = 0;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
+
+  cart.forEach((c, i) => {
+    // Nueva página si necesario (deja espacio para totales + footer)
+    if (y > pageH - 30) {
+      doc.addPage();
+      y = 18;
+      // repetir cabecera de tabla
+      doc.setFillColor(240, 244, 248);
+      doc.rect(mg, y - 4, pageW - mg * 2, 8, 'F');
+      doc.setTextColor(90, 100, 115);
+      doc.setFontSize(6.5); doc.setFont('helvetica', 'bold');
+      doc.text('CATEGORÍA',  colCat,  y);
+      doc.text('PRODUCTO',   colNom,  y);
+      doc.text('CANT.',      colQty,  y, { align: 'right' });
+      doc.text('P.UNIT $',   colUnit, y, { align: 'right' });
+      doc.text('TOTAL $',    colTUSD, y, { align: 'right' });
+      doc.text('TOTAL Bs.',  colTBsF, y, { align: 'right' });
+      y += 2;
+      doc.setDrawColor(200, 210, 225);
+      doc.line(mg, y, pageW - mg, y);
+      y += 4;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
+    }
+
+    const usd     = calcUSD(c.basePrice, discount);
+    const bsf     = calcBsF(usd);
+    const lineUSD = Math.round(usd * c.qty * 100) / 100;
+    const lineBsF = Math.round(bsf * c.qty * 100) / 100;
+    totalUSD += lineUSD;
+    totalBsF += lineBsF;
+
+    if (i % 2 === 0) {
+      doc.setFillColor(249, 250, 252);
+      doc.rect(mg, y - 3, pageW - mg * 2, 7.5, 'F');
+    }
+
+    doc.setTextColor(110, 120, 135);
+    doc.text(c.categoria, colCat, y, { maxWidth: 26 });
+    doc.setTextColor(30, 30, 30); doc.setFont('helvetica', 'bold');
+    doc.text(c.nombre,    colNom, y, { maxWidth: colQty - colNom - 2 });
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    doc.text(String(c.qty),           colQty,  y, { align: 'right' });
+    doc.text('$' + usd.toFixed(2),    colUnit, y, { align: 'right' });
+    doc.setTextColor(26, 58, 92); doc.setFont('helvetica', 'bold');
+    doc.text('$' + lineUSD.toFixed(2), colTUSD, y, { align: 'right' });
+    doc.setTextColor(39, 174, 96);
+    doc.text('$' + lineBsF.toFixed(2), colTBsF, y, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    y += 7.5;
+  });
+
+  // ── Totales ──
+  y += 3;
+  doc.setDrawColor(26, 58, 92);
+  doc.line(mg, y, pageW - mg, y);
+  y += 6;
+  doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+  doc.setTextColor(26, 58, 92);
+  doc.text('TOTAL USD:', pageW - 65, y);
+  doc.text('$' + totalUSD.toFixed(2), colTBsF, y, { align: 'right' });
+  y += 7;
+  doc.setTextColor(39, 174, 96);
+  doc.text('TOTAL Bs.:',  pageW - 65, y);
+  doc.text('$' + totalBsF.toFixed(2), colTBsF, y, { align: 'right' });
+
+  // ── Pie de página ──
+  doc.setFontSize(6.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(170, 170, 170);
+  doc.text('FAVECA – Tubos y Perfiles', mg, pageH - 6);
+  doc.text('Precios sujetos a cambios sin previo aviso', pageW - mg, pageH - 6, { align: 'right' });
+
+  const ts       = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const fileName = 'FAVECA_Presupuesto_' + ts + '.pdf';
+  try {
+    // Compatible con móviles (Android/iOS): blob URL + enlace de descarga
+    const blob = doc.output('blob');
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = fileName; a.target = '_blank';
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 300);
+  } catch(e) {
+    doc.save(fileName); // fallback escritorio
+  }
+  showToast('📄 PDF generado exitosamente', 'success');
+}
+
+/* ══════════════════════════════════════
+   ADMIN
+══════════════════════════════════════ */
+let adminUnlocked = false;
+
+function openAdmin() {
+  document.getElementById('adminBackdrop').classList.add('open');
+  if (!adminUnlocked) {
+    document.getElementById('adminLogin').style.display  = 'block';
+    document.getElementById('adminContent').style.display = 'none';
+    document.getElementById('adminPass').value = '';
+    document.getElementById('loginError').style.display = 'none';
+  } else {
+    document.getElementById('adminLogin').style.display  = 'none';
+    document.getElementById('adminContent').style.display = 'block';
+    document.getElementById('cfgDiff').value = differential;
+    renderAdminList();
+  }
+}
+function closeAdmin() { document.getElementById('adminBackdrop').classList.remove('open'); }
+
+function checkPass() {
+  const v = document.getElementById('adminPass').value;
+  if (v === adminPassword) {
+    adminUnlocked = true;
+    document.getElementById('adminLogin').style.display  = 'none';
+    document.getElementById('adminContent').style.display = 'block';
+    document.getElementById('cfgDiff').value = differential;
+    renderAdminList();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+
+function switchTab(tab) {
+  const tabs = ['products', 'add', 'config'];
+  document.querySelectorAll('.admin-tab').forEach((b, i) => {
+    b.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (tab === 'products') renderAdminList();
+  if (tab === 'config')   document.getElementById('cfgDiff').value = differential;
+}
+
+function renderAdminList() {
+  const catFilter = document.getElementById('adminCatFilter').value;
+  const search    = (document.getElementById('adminSearch').value || '').toLowerCase().trim();
+
+  // Usar getAllProducts() para ver también los ocultos
+  const list = getAllProducts().filter(p => {
+    if (catFilter && p.categoria !== catFilter) return false;
+    if (search && !p.nombre.toLowerCase().includes(search) &&
+        !p.categoria.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  const container = document.getElementById('adminProductList');
+  container.innerHTML = '';
+
+  if (list.length === 0) {
+    container.innerHTML = '<p style="color:var(--muted);text-align:center;padding:24px">No se encontraron productos.</p>';
+    return;
+  }
+
+  list.forEach(p => {
+    const sid      = String(p.id);
+    const isHidden = hiddenIds.includes(sid);
+    const div      = document.createElement('div');
+    div.className  = 'admin-product-item' + (isHidden ? ' hidden-product' : '');
+    div.innerHTML =
+      '<div class="apm-name">' +
+        '<div>' + p.nombre + '</div>' +
+        '<div class="apm-cat">' + p.categoria + '</div>' +
+      '</div>' +
+      '<input class="apm-price-input" type="number" step="0.01" min="0"' +
+             ' value="' + p.precio_usd.toFixed(2) + '" id="price_' + sid + '" />' +
+      '<button class="btn-sm btn-sm-save" onclick="savePrice(\'' + sid + '\')">💾 Guardar</button>' +
+      '<button class="btn-sm btn-sm-toggle ' + (isHidden ? '' : 'hide') + '"' +
+              ' onclick="toggleHide(\'' + sid + '\')">' +
+              (isHidden ? '👁 Mostrar' : '🚫 Ocultar') +
+      '</button>' +
+      '<button class="btn-sm btn-sm-delete" onclick="deleteProduct(\'' + sid + '\')" title="Eliminar permanentemente">🗑 Eliminar</button>';
+    container.appendChild(div);
+  });
+}
+
+function savePrice(id) {
+  const sid   = String(id);
+  const input = document.getElementById('price_' + sid);
+  if (!input) return;
+  const val = parseFloat(input.value);
+  if (isNaN(val) || val < 0) { showToast('Precio inválido'); return; }
+  priceOverrides[sid] = val;
+  localStorage.setItem('faveca_prices', JSON.stringify(priceOverrides));
+  // Actualizar basePrice en carrito si ese producto ya está
+  const cartItem = cart.find(c => String(c.id) === sid);
+  if (cartItem) { cartItem.basePrice = val; }
+  showToast('✔ Precio actualizado', 'success');
+  renderAdminList();
+  const cat = document.getElementById('catSelect').value;
+  if (cat) renderProducts(cat);
+  renderCart();
+}
+
+function toggleHide(id) {
+  const sid = String(id);
+  if (hiddenIds.includes(sid)) {
+    hiddenIds = hiddenIds.filter(x => x !== sid);
+    showToast('👁 Producto visible', 'success');
+  } else {
+    hiddenIds.push(sid);
+    // Quitar del carrito si estaba
+    cart = cart.filter(c => String(c.id) !== sid);
+    renderCart();
+    showToast('🚫 Producto oculto', '');
+  }
+  localStorage.setItem('faveca_hidden', JSON.stringify(hiddenIds));
+  init();
+  renderAdminList();
+  const cat = document.getElementById('catSelect').value;
+  if (cat) renderProducts(cat);
+}
+
+function deleteProduct(id) {
+  const sid = String(id);
+  if (!confirm('¿Eliminar este producto permanentemente? Esta acción no se puede deshacer.')) return;
+  // Si es producto personalizado, eliminarlo del array
+  const customIdx = customProducts.findIndex(p => String(p.id) === sid);
+  if (customIdx >= 0) {
+    customProducts.splice(customIdx, 1);
+    localStorage.setItem('faveca_custom', JSON.stringify(customProducts));
+  } else {
+    // Producto base: añadir a lista de eliminados
+    if (!deletedIds.includes(sid)) {
+      deletedIds.push(sid);
+      localStorage.setItem('faveca_deleted', JSON.stringify(deletedIds));
+    }
+  }
+  // Quitar del carrito y de ocultos
+  cart = cart.filter(c => String(c.id) !== sid);
+  hiddenIds = hiddenIds.filter(x => x !== sid);
+  localStorage.setItem('faveca_hidden', JSON.stringify(hiddenIds));
+  renderCart();
+  showToast('🗑 Producto eliminado permanentemente', '');
+  init();
+  renderAdminList();
+  const cat = document.getElementById('catSelect').value;
+  if (cat) renderProducts(cat);
+}
+
+function addProduct() {
+  const catSel    = document.getElementById('newCat').value;
+  const catCustom = document.getElementById('newCatCustom').value.trim().toUpperCase();
+  const nombre    = document.getElementById('newName').value.trim();
+  const precio    = parseFloat(document.getElementById('newPrice').value);
+  const categoria = catCustom || catSel;
+
+  if (!categoria) { showToast('Selecciona o escribe una categoría'); return; }
+  if (!nombre)    { showToast('Escribe el nombre del producto'); return; }
+  if (isNaN(precio) || precio <= 0) { showToast('Precio inválido'); return; }
+
+  const newId = 'c_' + Date.now();
+  customProducts.push({ id: newId, categoria, nombre, precio_usd: precio });
+  localStorage.setItem('faveca_custom', JSON.stringify(customProducts));
+
+  document.getElementById('newCat').value       = '';
+  document.getElementById('newCatCustom').value = '';
+  document.getElementById('newName').value      = '';
+  document.getElementById('newPrice').value     = '';
+
+  init();
+  showToast('✔ Producto "' + nombre + '" agregado', 'success');
+  switchTab('products');
+}
+
+function saveDiff() {
+  const val = parseFloat(document.getElementById('cfgDiff').value);
+  if (isNaN(val) || val < 1) { showToast('Factor inválido (mín. 1)'); return; }
+  differential = val;
+  localStorage.setItem('faveca_diff', String(val));
+  showToast('✔ Factor Bs. actualizado a ' + val, 'success');
+  const cat = document.getElementById('catSelect').value;
+  if (cat) renderProducts(cat);
+  renderCart();
+}
+
+function savePass() {
+  const v = document.getElementById('cfgPass').value;
+  if (!v || v.length < 4) { showToast('Mínimo 4 caracteres'); return; }
+  adminPassword = v;
+  localStorage.setItem('faveca_pass', v);
+  document.getElementById('cfgPass').value = '';
+  showToast('✔ Contraseña actualizada', 'success');
+}
+
+function resetPrices() {
+  // Usar diálogo custom en vez de confirm()
+  if (!window.__resetConfirmed) {
+    window.__resetConfirmed = true;
+    showToast('Haz clic de nuevo en "Restaurar" para confirmar', '');
+    setTimeout(() => { window.__resetConfirmed = false; }, 3000);
+    return;
+  }
+  window.__resetConfirmed = false;
+  priceOverrides = {};
+  localStorage.setItem('faveca_prices', '{}');
+  // Restaurar basePrices en el carrito
+  cart.forEach(c => {
+    const sid = String(c.id);
+    const all = [...BASE_PRODUCTS, ...customProducts];
+    const orig = all.find(p => String(p.id) === sid);
+    if (orig) c.basePrice = orig.precio_usd;
+  });
+  renderAdminList();
+  const cat = document.getElementById('catSelect').value;
+  if (cat) renderProducts(cat);
+  renderCart();
+  showToast('✔ Precios restaurados a valores originales', 'success');
+}
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+let toastTimer;
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' '+type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = 'toast', 2800);
+}
+
+/* ══════════════════════════════════════
+   CLOSE ON BACKDROP CLICK
+══════════════════════════════════════ */
+document.getElementById('adminBackdrop').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeAdmin();
+});
+document.getElementById('confirmBackdrop').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeConfirm();
+});
+
+/* Tecla Escape cierra modales */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeAdmin();
+    closeConfirm();
+  }
+});
+
+/* START */
+init();
+renderCart();
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"f0f03d0605bf45f1a3b17cf7d5e6861f"}' crossorigin="anonymous"></script>
+</body>
+</html>
