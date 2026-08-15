@@ -757,8 +757,13 @@ function roundUSD(price) { return Math.ceil(price * 100) / 100; }
 function calcUSD(basePrice, disc) {
   return roundUSD(basePrice * (1 - disc));
 }
-function calcBsF(usdRounded) {
-  return Math.ceil(usdRounded) * differential;
+
+/* Bs = Math.ceil(precioBase$) × (1 - descuento) × factor
+   Se aplica Math.ceil al precio BASE para luego descontar correctamente.
+   Así 10% y 15% siempre producen valores distintos en Bs. */
+function calcBsF(basePrice, disc) {
+  const d = (disc !== undefined) ? disc : 0;
+  return Math.ceil(basePrice) * (1 - d) * differential;
 }
 
 /* ══════════════════════════════════════
@@ -815,10 +820,10 @@ function renderProducts(cat) {
   const tbody = document.getElementById('productsBody');
   tbody.innerHTML = '';
   products.forEach(p => {
-    const usd = calcUSD(p.precio_usd, discount);
-    const bsf = calcBsF(usd);
+    const usd     = calcUSD(p.precio_usd, discount);
+    const bsf     = calcBsF(p.precio_usd, discount);
     const baseUsd = calcUSD(p.precio_usd, 0);
-    const baseBsf = calcBsF(baseUsd);
+    const baseBsf = calcBsF(p.precio_usd, 0);
     const hasDisc = discount > 0;
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -938,7 +943,7 @@ function renderCart() {
 
   cart.forEach(c => {
     const usd     = calcUSD(c.basePrice, discount);
-    const bsf     = calcBsF(usd);
+    const bsf     = calcBsF(c.basePrice, discount);
     const lineUSD = Math.round(usd * c.qty * 100) / 100;
     const lineBsF = Math.round(bsf * c.qty * 100) / 100;
     totalUSD += lineUSD;
@@ -1053,7 +1058,7 @@ function generatePDF() {
     }
 
     const usd     = calcUSD(c.basePrice, discount);
-    const bsf     = calcBsF(usd);
+    const bsf     = calcBsF(c.basePrice, discount);
     const lineUSD = Math.round(usd * c.qty * 100) / 100;
     const lineBsF = Math.round(bsf * c.qty * 100) / 100;
     totalUSD += lineUSD;
